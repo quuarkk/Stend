@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VK Posts</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'main/css/main.css' %}">
+    <style>
+        body {
+            background-color: #f0f8ff; /* Светло-синий фон */
+            color: #003366; /* Темно-синий текст */
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: grid;
+            grid-template-areas:
+                "left right"
+                "bottom bottom";
+            grid-template-columns: 2fr 2fr;
+            grid-template-rows: 3fr 1fr;
+            gap: 10px;
+            height: 100vh;
+            padding: 10px;
+        }
+        .left {
+            grid-area: left;
+            background: #ffffff; /* Белый фон */
+            border: 2px solid #003366;
+            border-radius: 10px;
+            padding: 20px;
+            overflow: auto;
+        }
+        .right {
+            grid-area: right;
+            background: #ffffff; /* Белый фон */
+            border: 2px solid #003366;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Обрезать содержимое, выходящее за пределы */
+            position: relative;
+        }
+        .slider {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            position: absolute;
+            transition: transform 0.5s ease-in-out;
+        }
+        .slider img {
+            flex-shrink: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Обрезка изображения, если оно больше контейнера */
+            border-radius: 10px;
+        }
+        .bottom {
+            grid-area: bottom;
+            background: #003366; /* Темно-синий фон */
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .bottom div {
+            text-align: center;
+            color: #000000; /* Черный текст */
+        }
+        .bottom img {
+            max-width: 80px; /* Максимальный размер QR-кодов */
+            max-height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #ffffff;
+            margin-top: 5px;
+        }
+    </style>
+
+    <script>
+    function updateContent() {
+        fetch('/api/latest-post/')  // Запрашиваем последние данные через API
+            .then(response => response.json())
+            .then(data => {
+                // Обновляем текст поста
+                const postText = document.querySelector('.left p');
+                postText.textContent = data.text;
+
+                // Обновляем фотографии
+                const slider = document.querySelector('.slider');
+                slider.innerHTML = ''; // Очищаем старые фотографии
+
+                if (data.photos.length > 0) {
+                    data.photos.forEach(photo => {
+                        const img = document.createElement('img');
+                        img.src = photo;
+                        img.alt = 'Фото из поста';
+                        slider.appendChild(img);
+                    });
+                } else {
+                    slider.innerHTML = '<p>Нет доступных фотографий.</p>';
+                }
+            })
+            .catch(error => console.error('Ошибка при обновлении данных:', error));
+    }
+
+    // Обновляем содержимое каждые 30 секунд
+    setInterval(updateContent, 30000);
+
+    // Запускаем обновление сразу при загрузке страницы
+    document.addEventListener('DOMContentLoaded', updateContent);
+</script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="left">
+            <p>{{ post.text }}</p>
+        </div>
+        <div class="right">
+            <h2>Последние фотографии</h2>
+            <div class="slider">
+                {% for photo in post.photos %}
+                    <img src="{{ photo }}" alt="Фото из поста">
+                {% empty %}
+                    <p>Нет доступных фотографий.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="bottom">
+            <div>
+                <p>ФМИ КГУ</p>
+                <img src="/static/qr-code.gif" alt="QR Code 5">
+            </div>
+            <div>
+                <p>Программисты КГУ</p>
+                <img src="/static/qr-code (1).gif" alt="QR Code 5">
+            </div>
+            <div>
+                <p>Электроника и наноэлектроника</p>
+                <img src="/static/qr-code (2).gif" alt="QR Code 5">
+            </div>
+            <div>
+                <p>КГУ.ФМИ.ZonaИБ</p>
+                <img src="/static/qr-code (3).gif" alt="QR Code 5">
+            </div>
+            <div>
+                <p>КГУ</p>
+                <img src="/static/qr-code (4).gif" alt="QR Code 5">
+            </div>
+        </div>
+    </div>
+<script>
+    let currentIndex = 0; // Индекс текущего изображения
+    let sliderInterval; // Переменная для хранения интервала слайдера
+
+    // Функция запуска слайдера
+    function startSlider() {
+        const images = document.querySelectorAll('.slider img');
+        if (images.length === 0) return; // Если изображений нет, выходим
+
+        // Останавливаем предыдущий интервал
+        if (sliderInterval) clearInterval(sliderInterval);
+
+        // Устанавливаем интервал переключения
+        sliderInterval = setInterval(() => {
+            images.forEach((img, i) => {
+                img.style.display = i === currentIndex ? 'block' : 'none';
+            });
+            currentIndex = (currentIndex + 1) % images.length; // Переход к следующему изображению
+        }, 3000);
+
+        // Отображаем первое изображение при запуске
+        images.forEach((img, i) => {
+            img.style.display = i === 0 ? 'block' : 'none';
+        });
+    }
+
+    // Функция обновления содержимого
+    function updateContent() {
+        fetch('/api/latest-post/') // Запрашиваем последние данные через API
+            .then(response => response.json())
+            .then(data => {
+                // Обновляем текст поста
+                const postText = document.querySelector('.left p');
+                postText.textContent = data.text;
+
+                // Обновляем фотографии
+                const slider = document.querySelector('.slider');
+                slider.innerHTML = ''; // Очищаем старые фотографии
+
+                if (data.photos.length > 0) {
+                    data.photos.forEach(photo => {
+                        const img = document.createElement('img');
+                        img.src = photo;
+                        img.alt = 'Фото из поста';
+                        slider.appendChild(img);
+                    });
+                    startSlider(); // Запускаем слайдер заново после обновления
+                } else {
+                    slider.innerHTML = '<p>Нет доступных фотографий.</p>';
+                }
+            })
+            .catch(error => console.error('Ошибка при обновлении данных:', error));
+    }
+
+    // Обновляем содержимое каждые 10 секунд
+    setInterval(updateContent, 10000);
+
+    // Запускаем обновление сразу при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        updateContent();
+        startSlider(); // Запускаем слайдер при первой загрузке
+    });
+</script>
+
+<script>
+    function adjustFontSize() {
+        const textElement = document.querySelector('.left p');
+        if (!textElement) return;
+
+        const parent = document.querySelector('.left');
+        const maxFontSize = 24; // Максимальный размер шрифта
+        const minFontSize = 12; // Минимальный размер шрифта
+        const maxHeight = parent.clientHeight - 40; // Максимальная высота текста (минус отступы)
+
+        let fontSize = maxFontSize; // Начинаем с максимального шрифта
+        textElement.style.fontSize = fontSize + 'px';
+
+        while (textElement.scrollHeight > maxHeight && fontSize > minFontSize) {
+            fontSize--; // Уменьшаем шрифт, пока текст не поместится
+            textElement.style.fontSize = fontSize + 'px';
+        }
+    }
+
+    // Функция обновления содержимого с настройкой шрифта
+    function updateContent() {
+        fetch('/api/latest-post/') // Запрашиваем последние данные через API
+            .then(response => response.json())
+            .then(data => {
+                // Обновляем текст поста
+                const postText = document.querySelector('.left p');
+                postText.textContent = data.text;
+
+                adjustFontSize(); // Настраиваем размер шрифта после обновления текста
+
+                // Обновляем фотографии
+                const slider = document.querySelector('.slider');
+                slider.innerHTML = ''; // Очищаем старые фотографии
+
+                if (data.photos.length > 0) {
+                    data.photos.forEach(photo => {
+                        const img = document.createElement('img');
+                        img.src = photo;
+                        img.alt = 'Фото из поста';
+                        slider.appendChild(img);
+                    });
+                    startSlider(); // Запускаем слайдер заново после обновления
+                } else {
+                    slider.innerHTML = '<p>Нет доступных фотографий.</p>';
+                }
+            })
+            .catch(error => console.error('Ошибка при обновлении данных:', error));
+    }
+
+    // Запускаем обновление при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        updateContent();
+        adjustFontSize();
+    });
+
+    // Обновляем содержимое каждые 30 секунд
+    setInterval(() => {
+        updateContent();
+        adjustFontSize();
+    }, 30000);
+</script>
+
+
+</body>
+</html>

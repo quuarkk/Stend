@@ -1,0 +1,31 @@
+<style>
+    .bottom {
+        grid-area: bottom;
+        background: #e0e0e0;
+        display: flex;
+        justify-content: space-around; /* Равномерное распределение элементов по горизонтали */
+        align-items: stretch;         /* Растягивает элементы на всю высоту */
+        padding: 10px;
+    }
+    .bottom div {
+        display: flex;
+        flex-direction: column;       /* Элементы внутри блока (текст + QR-код) располагаются вертикально */
+        justify-content: center;      /* Центрирует содержимое (текст и изображение) */
+        align-items: center;          /* Выравнивает содержимое по центру */
+        text-align: center;           /* Текст по центру */
+        flex: 1;                      /* Растягивает каждый блок на равную высоту */
+        padding: 10px;
+        background: #f8f8f8;          /* Светлый фон для наглядности */
+        border-radius: 8px;           /* Закруглённые углы для красоты */
+    }
+    .bottom img {
+        max-width: 100px;             /* Максимальная ширина изображения */
+        max-height: 100px;            /* Максимальная высота изображения */
+        margin: 10px 0;               /* Отступ между текстом и изображением */
+    }
+    .bottom p {
+        font-size: 16px;              /* Размер текста */
+        font-weight: bold;            /* Жирный текст */
+        margin: 0;                    /* Убираем отступы вокруг текста */
+    }
+</style>
